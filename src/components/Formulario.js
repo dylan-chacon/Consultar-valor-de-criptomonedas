@@ -3,6 +3,7 @@ import styled from '@emotion/styled';
 import useMoneda from '../hooks/useMoneda'
 import useCriptomoneda from '../hooks/useCriptomoneda';
 import axios from 'axios';
+import Error from './Error';
 
 const Boton = styled.button`
     margin-top: 20px;
@@ -22,9 +23,10 @@ const Boton = styled.button`
     }
 `;
 
-const Formulario = () => {
+const Formulario = ({guardarMoneda, guardarCripto}) => {
     //state
     const [criptos, guardarCriptos] = useState([]);
+    const [error, guardarError] = useState(false);
     //listado de monedas
     const MONEDAS = [
         { codigo: 'USD', nombre: 'Dolar de Estados Unidos'},
@@ -33,7 +35,7 @@ const Formulario = () => {
         { codigo: 'COP', nombre: 'Peso Colombiano'}
     ];
     //useMoneda
-    const [state, Seleccionar] = useMoneda('Elige tu moneda', '', MONEDAS);
+    const [moneda, Seleccionar] = useMoneda('Elige tu moneda', '', MONEDAS);
     //useCriptoMoneda
     const [criptoMoneda, SeleccionarCripto] = useCriptomoneda('Elige tu criptomoneda', '', criptos);
     //lamar api
@@ -45,8 +47,24 @@ const Formulario = () => {
         }
         consultarAPI();
     }, [])
+    //submit
+    const cotizarmoneda = e => {
+        e.preventDefault();
+        //ambos campos llenos
+        if (moneda === '' || criptoMoneda === '') {
+            guardarError(true);
+            return
+        }
+        guardarError(false);
+        //pasando al componente principal
+        guardarMoneda(moneda);
+        guardarCripto(criptoMoneda);
+    }
     return (
-        <form>
+        <form
+            onSubmit={cotizarmoneda}
+        >
+            { error ? <Error mensaje="Todos los campos son obligatorios" /> : null }
             <Seleccionar/>
             <SeleccionarCripto/>
             <Boton
